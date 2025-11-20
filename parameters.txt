@@ -1,0 +1,25 @@
+n_samples = 1000
+
+n_features =  100 valores aleatórios 10 a 100
+
+n_informative = 100 valores aleatórios de n_features*0.5 a n_features
+
+n_redundant = 100 valores aleatórios  de n_feature-n_informative*0.5  a n_feature-n_informative
+
+n_classes = 2
+
+n_clusters_per_class =  aleatório de 2 a 5.
+
+weights: Para o estudo sobre overlap varia entre 0.4 e 0.6
+
+class_sep: Para o estudo sobre desbalanceamento aleatório entre 2 e 3
+
+flip_y = 0.01
+
+scale = None (esperamos que cada feature de cada dataset seja multiplicada por um valor diferente entre 0 e 100, se não der certo, gerar um array com n_features valores aleatórios entre 0 e 100)
+
+shuffle: investigar o que faz.
+
+random_state = 10
+
+return_X_y = True
