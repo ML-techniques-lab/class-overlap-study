@@ -10,9 +10,6 @@ N_TESTS = 100
 
 random.seed(RANDOM_STATE)
 
-Arguments = dict[str, Union[int, float, list[float]]]
-Dataset = tuple[np.ndarray, np.ndarray]
-
 def generate_parameters():
   parameters = []
   for i in range(N_TESTS):
