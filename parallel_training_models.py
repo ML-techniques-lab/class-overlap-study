@@ -5,10 +5,28 @@ import sys
 import numpy as np
 import math
 from multiprocessing import Pool, cpu_count
-from sklearn.model_selection import StratifiedKFold
+
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, BaggingClassifier
+from sklearn.linear_model import LogisticRegression, Perceptron
+from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.neural_network import MLPClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from deslib.des.knora_e import KNORAE
+from deslib.dcs import OLA, LCA, MCB
+from sklearn_lvq import GlvqModel
+from xgboost import XGBClassifier
+from deslib.des import KNORAU
+from sklearn.svm import SVC
+
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.model_selection import StratifiedKFold
 from imblearn.metrics import geometric_mean_score
+
 from typing import Dict, Any, List, Tuple
 import generate_datasets 
 import generate_base_datasets # Necessário para pegar N_TESTS
@@ -47,10 +65,33 @@ N_FOLDS = 5
 
 random.seed(RANDOM_STATE)
 
+base_model = Perceptron(random_state=RANDOM_STATE)
+pool_classifiers = BaggingClassifier(base_estimator=base_model, n_estimators=100, random_state=RANDOM_STATE, bootstrap=True,
+                                     bootstrap_features=False, max_features=1.0, n_jobs=-1)
+
 # Modelos a serem rodados
 MODELS_TO_RUN = {
-  'KNN': {'class': KNeighborsClassifier, 'params': {'n_neighbors': 5}},
-  'GLQV': {'class': GlvqModel, 'params': {'prototypes_per_class': 1, 'max_iter': 2500, 'gtol': 1e-5, 'beta': 5, 'random_state': RANDOM_STATE}}
+  'KNN': KNeighborsClassifier(n_neighbors=5, n_jobs=-1),
+  'SVM_lin': SVC(kernel='linear', probability=True),
+  'SVM_rbf': SVC(kernel='rbf', probability=True),
+  'GLQV': GlvqModel(prototypes_per_class=1, max_iter=2500, gtol=1e-5, beta=5, random_state=RANDOM_STATE),
+  'LR': LogisticRegression(n_jobs=-1),
+  'GNB': GaussianNB(),
+  'GP': GaussianProcessClassifier(1.0 * RBF(1.0), random_state=RANDOM_STATE, n_jobs=-1),
+  'LDA': LinearDiscriminantAnalysis(),
+  'QDA': QuadraticDiscriminantAnalysis(),
+  'DT': DecisionTreeClassifier(random_state=RANDOM_STATE),
+  'MLP': MLPClassifier(activation='relu', solver='adam', alpha=1e-5, hidden_layer_sizes=(5,2), random_state=RANDOM_STATE),
+  'Percep': Perceptron(random_state=RANDOM_STATE, n_jobs=-1),
+  'XGBoost': XGBClassifier(n_jobs=-1, random_state=RANDOM_STATE),
+  'RF': RandomForestClassifier(random_state=0, n_jobs=-1),
+  'AdaBoost': AdaBoostClassifier(n_estimators=100),
+  'Bagging': pool_classifiers,
+  'OLA': OLA(pool_classifiers, random_state=RANDOM_STATE),
+  'LCA': LCA(pool_classifiers, random_state=RANDOM_STATE),
+  'MCB': MCB(pool_classifiers, random_state=RANDOM_STATE),
+  'KNORAE': KNORAE(pool_classifiers, random_state=RANDOM_STATE),
+  'KNORAU': KNORAU(pool_classifiers, random_state=RANDOM_STATE)
 }
 
 # Métricas

@@ -6,7 +6,9 @@ import generate_base_datasets
 import pandas as pd
 import os
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, \
+  RobustScaler, QuantileTransformer, PowerTransformer
 
 DATASETS_DIR = "datasets"
 OUT_DIR = "scaled_datasets"
@@ -54,7 +56,11 @@ for i in range(N_TESTS):
 
 scalers = {
     'MM': MinMaxScaler(),
-    'SS': StandardScaler()
+    'SS': StandardScaler(),
+    'MA': MaxAbsScaler(),
+    'RS': RobustScaler(),
+    'QT': QuantileTransformer(),
+    'PT': PowerTransformer(method='yeo-johnson', standardize=True)
 }
 
 results = {}
