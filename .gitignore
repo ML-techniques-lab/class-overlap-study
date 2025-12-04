@@ -3,4 +3,5 @@ __pycache__
 datasets
 metadatas
 plots
+scaled_datasets
 *.png
