@@ -6,13 +6,13 @@ Abaixo há o detalhamento das etapas e experimentos realizados.
 
 ## 1. Geração de Datasets Sintéticos
 
-Para gerar datasets sintéticos de maneira controlada, utilizamos a função `make_classification` da biblioteca `scikit-learn`, seguindo os parâmetros estocásticos definidos em `generate_datasets.py` e descritos no arquivo parameters.txt (ex: número de features informativas, redundantes, clusters, etc.).
+Para gerar datasets sintéticos de maneira controlada, utilizamos a função `make_classification` da biblioteca `scikit-learn`, seguindo os parâmetros estocásticos definidos em `generate_base_datasets.py` e descritos no arquivo parameters.txt (ex: número de features informativas, redundantes, clusters, etc.).
 
 Foram gerados 100 configurações base de datasets (N_TESTS = 100), garantindo uma diversidade estatística suficiente para os experimentos.
 
 ## 2. Variação de Sobreposição (Overlap)
 
-O script principal de geração, `generate_datasets.py`, é responsável por criar as variações de cada um dos 100 datasets base. As seguintes regras foram aplicadas:
+O script principal de geração, `generate_datasets_random_weight.py`, é responsável por criar as variações de cada um dos 100 datasets base. As seguintes regras foram aplicadas:
 
 •	Variação de `class_sep`: Para cada dataset, são geradas 10 versões com o parâmetro de separação variando de 0.1 (alta sobreposição) até 5.0 (bem separados).
 
