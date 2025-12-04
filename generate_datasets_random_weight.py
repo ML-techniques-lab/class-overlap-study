@@ -43,7 +43,12 @@ def generate_datasets():
       if not os.path.exists(os.path.join(DATASETS_DIR, dataset_name)):
             os.mkdir(os.path.join(DATASETS_DIR, dataset_name))
 
-      # Save base parameters used
+      # Define peso aleatório para este dataset (entre 0.4 e 0.6 conforme parameters.txt)
+      # Isso garante que todas as variações de 'sep' deste dataset tenham o mesmo desbalanceamento base
+      w = random.uniform(0.4, 0.6)
+      parameters[i]["weights"] = [w]
+
+      # Save base parameters used (agora inclui o peso sorteado)
       with open(os.path.join(METADATAS_DIR, f"metadata_dataset_{i+1}.json"), 'w') as json_file:
         json.dump(parameters[i], json_file, indent=2)
 
@@ -52,8 +57,8 @@ def generate_datasets():
           # Define a separação atual (varia o overlap)
           parameters[i]["class_sep"] = sep
           
-          # Fixa o balanceamento (50/50) para isolar o efeito do overlap
-          parameters[i]["weights"] = [0.5] 
+          # O balanceamento agora usa o valor aleatório definido acima (w), não mais fixo em 0.5
+          # parameters[i]["weights"] = [0.5]  <-- Linha removida/substituída pela lógica acima
 
           X, y = make_classification(**parameters[i])
           dataset = pd.DataFrame(data=X)
