@@ -6,110 +6,128 @@ import generate_base_datasets
 import pandas as pd
 import os
 import numpy as np
+import time # Adicionado para o temporizador
+import sys # Adicionado para impressões de erro/status no worker
+from multiprocessing import Pool, cpu_count # Adicionado para paralelismo
 
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler, \
   RobustScaler, QuantileTransformer, PowerTransformer
 
+# --- Constantes originais ---
 DATASETS_DIR = "datasets"
 OUT_DIR = "scaled_datasets"
-# Recupera o RANDOM_STATE base
 RANDOM_STATE = generate_base_datasets.RANDOM_STATE
-
-# Recupera as configurações de separação do arquivo que gerou os dados
 START_SEP = generate_datasets.START_SEP
 END_SEP = generate_datasets.END_SEP
 STEP_SEP = generate_datasets.STEP_SEP
 N_TESTS = generate_base_datasets.N_TESTS
 
-if not os.path.exists(OUT_DIR):
-    os.mkdir(OUT_DIR)
-
-datasets = []
-
-# Gera os mesmos valores de separação usados na geração
-sep_values = np.arange(START_SEP, END_SEP, STEP_SEP)
-
-print(f"Iniciando leitura de {N_TESTS} datasets com {len(sep_values)} variações de overlap cada...")
-
-# Itera numericamente para garantir que dataset_1 seja processado como dataset_1
-for i in range(N_TESTS):
-    dataset_folder_name = f"dataset_{i+1}"
-    dataset_path = os.path.join(DATASETS_DIR, dataset_folder_name)
-    
-    # Monta os nomes dos arquivos baseados no padrão de separação (ex: dataset_1_sep_0.10.csv)
-    # Nota: O formato .2f deve coincidir com o usado em generate_datasets.py
-    dataset_files = [f"{dataset_folder_name}_sep_{sep:.2f}.csv" for sep in sep_values]
-    
-    current_dataset_variations = []
-    for file_name in dataset_files:
-        full_path = os.path.join(dataset_path, file_name)
-        try:
-            df = pd.read_csv(full_path)
-            current_dataset_variations.append(df)
-        except FileNotFoundError:
-            print(f"Aviso: Arquivo não encontrado: {full_path}")
-            # Adiciona None ou lida com erro se necessário, 
-            # mas assume-se que os arquivos foram gerados corretamente.
-    
-    if current_dataset_variations:
-        datasets.append(current_dataset_variations)
-
-scalers = {
+# --- Definindo Scalers (fora da função principal) ---
+SCALERS = {
     'MM': MinMaxScaler(),
     'SS': StandardScaler(),
     'MA': MaxAbsScaler(),
     'RS': RobustScaler(),
-    'QT': QuantileTransformer(),
+    'QT': QuantileTransformer(random_state=RANDOM_STATE),
     'PT': PowerTransformer(method='yeo-johnson', standardize=True)
 }
 
-results = {}
+# ------------------------------------------------------------------------------
+# FUNÇÃO WORKER PARA PROCESSAMENTO PARALELO
+# ------------------------------------------------------------------------------
+def scale_and_save_worker(i: int, sep: float, scalers: dict, datasets_dir: str, out_dir: str):
+    """
+    Carrega um dataset específico (dataset_i, sep_j), aplica todos os scalers 
+    e salva os resultados na estrutura de pastas de saída.
+    """
+    # 1. Definir caminhos de entrada e saída
+    dataset_folder_name = f"dataset_{i+1}"
+    file_name = f"{dataset_folder_name}_sep_{sep:.2f}.csv"
+    full_path = os.path.join(datasets_dir, dataset_folder_name, file_name)
+    
+    # Caminho base de saída (ex: scaled_datasets/dataset_1/sep_0.10)
+    base_out_path = os.path.join(out_dir, dataset_folder_name, f"sep_{sep:.2f}")
 
-print("Aplicando escalonamento...")
+    # 2. Carregar Dados
+    try:
+        df = pd.read_csv(full_path)
+    except FileNotFoundError:
+        print(f"Worker: Arquivo não encontrado: {full_path}", file=sys.stderr)
+        return False
 
-for name, scaler in scalers.items():
-    scaled_datasets = []
-    # Para cada conjunto de dados (1 a 100)
-    for i in range(len(datasets)):
-        scaled_variations = []
-        # Para cada variação de overlap dentro do dataset
-        for j in range(len(datasets[i])):
-            dataset = datasets[i][j]
+    X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
+
+    # 3. Criar estrutura de diretório de saída
+    if not os.path.exists(base_out_path):
+        os.makedirs(base_out_path)
+
+    # 4. Salvar o original (sem escala)
+    df.to_csv(os.path.join(base_out_path, "original.csv"), index=False)
+
+    # 5. Aplicar e salvar as versões escalonadas
+    for name, scaler in scalers.items():
+        try:
+            # Clona o scaler para garantir que cada worker tenha sua própria instância
+            # e fit/transform seja isolado
+            scaler_instance = scaler.__class__()
+            # A classe QuantileTransformer precisa do random_state para ser reproduzível
+            if name == 'QT':
+                 scaler_instance.set_params(random_state=RANDOM_STATE) 
             
-            # Separa X e y
-            X = dataset.iloc[:, :-1]
-            y = dataset.iloc[:, -1]
+            X_scaled = scaler_instance.fit_transform(X)
             
-            # Aplica o scaler apenas no X
-            X_scaled = scaler.fit_transform(X)
+            scaled_dataset = pd.concat([pd.DataFrame(X_scaled, columns=df.columns[:-1]), y], axis=1)
+            scaled_dataset.to_csv(os.path.join(base_out_path, f"{name}.csv"), index=False)
+        except Exception as e:
+            # Imprime o erro no stderr para não interferir com a saída padrão
+            print(f"Worker: Falha ao aplicar {name} em {file_name}: {e}", file=sys.stderr)
             
-            # Reconstrói o DataFrame
-            scaled_dataset = pd.concat([pd.DataFrame(X_scaled, columns=dataset.columns[:-1]), y], axis=1)
-            scaled_variations.append(scaled_dataset)
-        scaled_datasets.append(scaled_variations)
-    results[name] = scaled_datasets
+    print(f"Worker Concluído: Dataset {i+1}, Sep {sep:.2f}", file=sys.stderr)
+    return True # Retorna sucesso
 
-print("Salvando arquivos...")
+# ------------------------------------------------------------------------------
+# FUNÇÃO PRINCIPAL DE EXECUÇÃO PARALELA
+# ------------------------------------------------------------------------------
+def run_scaling_parallel():
+    
+    # --- TEMPORIZADOR: INÍCIO ---
+    start_time = time.time() 
+    
+    if not os.path.exists(OUT_DIR):
+        os.mkdir(OUT_DIR)
 
-for i in range(len(datasets)):
-    # Cria a estrutura de pasta para o dataset atual (ex: scaled_datasets/dataset_1)
-    dataset_out_path = f"{OUT_DIR}/dataset_{i+1}"
-    if not os.path.exists(dataset_out_path):
-        os.makedirs(dataset_out_path)
+    sep_values = np.arange(START_SEP, END_SEP, STEP_SEP)
 
-    for j in range(len(sep_values)):
-        # Cria a subpasta para o nível de separação (ex: sep_0.10)
-        sep_val = sep_values[j]
-        base_path = f"{dataset_out_path}/sep_{sep_val:.2f}"
+    # 1. Criação da lista de tarefas (Task = (dataset_i, sep_j))
+    all_tasks = []
+    for i in range(N_TESTS):
+        for sep in sep_values:
+            # Tupla de argumentos para o worker
+            all_tasks.append((i, sep, SCALERS, DATASETS_DIR, OUT_DIR))
+
+    # 2. Configuração do Pool de Processos
+    num_processes = cpu_count()
+    total_tasks = len(all_tasks)
+    
+    print(f"Iniciando escalonamento paralelo de {total_tasks} arquivos em {num_processes} núcleos.")
+    
+    # 3. Execução Paralela
+    try:
+        with Pool(num_processes) as pool:
+            # starmap distribui a lista de tuplas de argumentos para a função worker
+            pool.starmap(scale_and_save_worker, all_tasks)
+    except Exception as e:
+        print(f"Erro fatal na execução paralela: {e}", file=sys.stderr)
         
-        if not os.path.exists(base_path):
-            os.makedirs(base_path)
-            
-        # Salva o original (sem escala) nesta nova estrutura organizada
-        datasets[i][j].to_csv(f"{base_path}/original.csv", index=False)
-        
-        # Salva as versões escalonadas
-        for name, result in results.items():
-            results[name][i][j].to_csv(f"{base_path}/{name}.csv", index=False)
+    # --- TEMPORIZADOR: FIM ---
+    end_time = time.time()
+    total_time = end_time - start_time
+    
+    print("\nProcessamento concluído.")
+    print(f"Tempo total de execução: {total_time:.2f} segundos ({total_time/60:.2f} minutos).")
 
-print("Concluído.")
+
+if __name__ == '__main__':
+    # Esta verificação é crucial para o correto funcionamento do multiprocessing
+    run_scaling_parallel()

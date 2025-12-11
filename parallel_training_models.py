@@ -57,7 +57,7 @@ if not hasattr(np, 'math'):
 from sklearn_lvq import GlvqModel 
 
 # --- Constantes e Configurações ---
-SCALING_METHODS = ['original', 'MM', 'SS']
+SCALING_METHODS = ['original', 'SS', 'MA', 'RS', 'QT', 'PT']
 DATASETS_DIR = "scaled_datasets"
 # Usa o RANDOM_STATE do gerador base para consistência
 RANDOM_STATE = generate_base_datasets.RANDOM_STATE 
