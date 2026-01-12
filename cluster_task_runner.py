@@ -4,13 +4,13 @@ import pandas as pd
 import random
 import sys
 import os
-import numpy as np # Adicionado
-from sklearn.base import clone # Adicionado para clonar modelos (essencial)
+import numpy as np
+from sklearn.base import clone
 import time
 
-# Dependências do projeto (Acesso às constantes de overlap)
+# Dependências do projeto
 import generate_datasets 
-import generate_base_datasets # Adicionado
+import generate_base_datasets
 
 # Metrics and model selection
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
@@ -35,7 +35,6 @@ from deslib.des import KNORAU
 from sklearn.svm import SVC
 
 """Constants"""
-
 DATASETS_DIR = "scaled_datasets"
 RANDOM_STATE = 10
 N_FOLDS = 5
@@ -47,25 +46,25 @@ SCORES = {
   'roc_auc': roc_auc_score
 }
 
-base_model = Perceptron(random_state=RANDOM_STATE, max_iter=1000) # Ajustado max_iter
-# CORREÇÃO: base_estimator substituído por estimator (para scikit-learn >= 1.2)
+base_model = Perceptron(random_state=RANDOM_STATE, max_iter=1000)
 pool_classifiers = BaggingClassifier(estimator=base_model, n_estimators=100, random_state=RANDOM_STATE, bootstrap=True,
-                                     bootstrap_features=False, max_features=1.0, n_jobs=1) # n_jobs=1 (serial no worker)
+                                     bootstrap_features=False, max_features=1.0, n_jobs=1)
+
 MODELS = {
-  'KNN': KNeighborsClassifier(n_neighbors=5, n_jobs=1), # n_jobs=1
+  'KNN': KNeighborsClassifier(n_neighbors=5, n_jobs=1),
   'SVM_lin': SVC(kernel='linear', probability=True),
   'SVM_rbf': SVC(kernel='rbf', probability=True),
   'GLQV': GlvqModel(prototypes_per_class=1, max_iter=2500, gtol=1e-5, beta=5, random_state=RANDOM_STATE),
-  'LR': LogisticRegression(n_jobs=1), # n_jobs=1
+  'LR': LogisticRegression(n_jobs=1),
   'GNB': GaussianNB(),
-  'GP': GaussianProcessClassifier(1.0 * RBF(1.0), random_state=RANDOM_STATE, n_jobs=1), # n_jobs=1
+  'GP': GaussianProcessClassifier(1.0 * RBF(1.0), random_state=RANDOM_STATE, n_jobs=1),
   'LDA': LinearDiscriminantAnalysis(),
   'QDA': QuadraticDiscriminantAnalysis(),
   'DT': DecisionTreeClassifier(random_state=RANDOM_STATE),
-  'MLP': MLPClassifier(activation='relu', solver='adam', alpha=1e-5, hidden_layer_sizes=(5,2), random_state=RANDOM_STATE, max_iter=1000), # max_iter ajustado
-  'Percep': Perceptron(random_state=RANDOM_STATE, n_jobs=1), # n_jobs=1
-  'XGBoost': XGBClassifier(n_jobs=1, random_state=RANDOM_STATE), # n_jobs=1
-  'RF': RandomForestClassifier(random_state=0, n_jobs=1), # n_jobs=1
+  'MLP': MLPClassifier(activation='relu', solver='adam', alpha=1e-5, hidden_layer_sizes=(5,2), random_state=RANDOM_STATE, max_iter=1000),
+  'Percep': Perceptron(random_state=RANDOM_STATE, n_jobs=1),
+  'XGBoost': XGBClassifier(n_jobs=1, random_state=RANDOM_STATE),
+  'RF': RandomForestClassifier(random_state=0, n_jobs=1),
   'AdaBoost': AdaBoostClassifier(n_estimators=100),
   'Bagging': pool_classifiers,
   'OLA': OLA(pool_classifiers, random_state=RANDOM_STATE),
@@ -74,68 +73,56 @@ MODELS = {
   'KNORAE': KNORAE(pool_classifiers, random_state=RANDOM_STATE),
   'KNORAU': KNORAU(pool_classifiers, random_state=RANDOM_STATE)
 }
-# Nota: n_jobs ajustado para 1 em modelos que o suportam, pois a paralelização externa é feita pelo cluster.
 
 random.seed(RANDOM_STATE)
 
 """System arguments"""
-# Verifica se os argumentos de linha de comando foram fornecidos
-if len(sys.argv) < 3:
-    print("Uso: python cluster_task_runner.py <scaling_methods|all> <models|all> [output_file]")
+if len(sys.argv) < 4:
+    print("Uso: python cluster_task_runner.py <scaling> <models> <start:end> [output_file]")
     sys.exit(1)
 
 args = sys.argv
-# Processa métodos de escala
-if (args[1].lower() == 'all'):
-  scaling_methods_to_run = SCALING_METHODS
-else:
-  scaling_methods_to_run = args[1].split(',')
-# Processa modelos
-if (args[2].lower() == 'all'):
-  models_to_run = MODELS.keys()
-else:
-  models_to_run = args[2].split(',')
+# Escalas
+scaling_methods_to_run = SCALING_METHODS if args[1].lower() == 'all' else args[1].split(',')
+# Modelos
+models_to_run = list(MODELS.keys()) if args[2].lower() == 'all' else args[2].split(',')
 
-if len(args) == 4:
-  outfile = args[3]
-else:
-  # Garante que o nome de saída reflita o subconjunto, se não for especificado
-  scaling_str = "all_scales" if args[1].lower() == 'all' else "_".join(scaling_methods_to_run)
-  models_str = "all_models" if args[2].lower() == 'all' else "_".join(models_to_run)
-  outfile = f'results_{scaling_str}_{models_str}.csv'
+# --- LÓGICA DE SLICE DE DATASETS ---
+try:
+    ds_range = args[3].split(':')
+    ds_start = int(ds_range[0]) - 1  # Converte para índice 0 (ex: "1" vira 0)
+    ds_end = int(ds_range[1])       # O range do Python já é exclusivo no final
+except:
+    print("Erro: O formato do intervalo deve ser start:end (ex: 1:10)")
+    sys.exit(1)
 
-"""Load datasets (Adaptado para a estrutura de Overlap)"""
+if len(args) == 5:
+    outfile = args[4]
+else:
+    outfile = f"results_{args[2]}_{args[3].replace(':','-')}.csv"
+
+"""Load datasets"""
 sep_values = np.arange(generate_datasets.START_SEP, generate_datasets.END_SEP, generate_datasets.STEP_SEP)
-num_datasets = generate_base_datasets.N_TESTS 
-
 datasets = []
-print(f"Carregando {num_datasets} datasets...")
 
-# Itera sobre datasets (0 a 99)
-for i in range(num_datasets):
+# Carregamos apenas os datasets do intervalo solicitado
+print(f"Carregando datasets do índice {ds_start+1} ao {ds_end}...")
+for i in range(ds_start, ds_end):
     base_path = f"{DATASETS_DIR}/dataset_{i+1}"
     levels = []
-    # Itera sobre os níveis de separação (overlap)
     for j, sep in enumerate(sep_values):
-        # CORREÇÃO: Path agora usa 'sep_0.xx' e não 'w_0.xxx'
         path = os.path.join(base_path, f"sep_{sep:.2f}") 
-        
         methods = []
+        
         if not os.path.exists(path):
-            print(f"Aviso: Diretório não encontrado: {path}", file=sys.stderr)
             methods = [None] * len(scaling_methods_to_run)
-            levels.append(methods)
-            continue
-            
-        # Itera sobre os métodos de escala selecionados
-        for scaling_method in scaling_methods_to_run:
-            file_name = scaling_method + ".csv"
-            try:
-                # Carrega o arquivo específico
-                methods.append(pd.read_csv(os.path.join(path, file_name)))
-            except FileNotFoundError:
-                print(f"Erro: Arquivo não encontrado: {os.path.join(path, file_name)}", file=sys.stderr)
-                methods.append(None) # Adiciona None em caso de falha de carregamento
+        else:
+            for scaling_method in scaling_methods_to_run:
+                file_path = os.path.join(path, f"{scaling_method}.csv")
+                try:
+                    methods.append(pd.read_csv(file_path))
+                except:
+                    methods.append(None)
         levels.append(methods)
     datasets.append(levels)
 
@@ -146,91 +133,70 @@ def calculate_score(y_true, y_pred):
 """Train models"""
 results = {name: [] for name in models_to_run}
 folds = StratifiedKFold(n_splits=N_FOLDS, random_state=RANDOM_STATE, shuffle=True)
-start_time = time.time() # Adiciona temporizador
+start_time = time.time()
 
-# Itera sobre os modelos SELECIONADOS
 for name in models_to_run:
     model = MODELS[name]
-    print(f"Iniciando treinamento do modelo: {name}")
+    print(f"Treinando: {name}")
     
-    for i in range(len(datasets)): # Loop Dataset
+    for i in range(len(datasets)): # Este loop agora só percorre os datasets carregados (o slice)
         dataset_results = []
-        for j in range(len(sep_values)): # Loop Sep Value
+        for j in range(len(sep_values)):
             level_results = []
-            
-            # NOTA: O 'k' aqui mapeia para o índice dentro de 'scaling_methods_to_run'
-            for k in range(len(scaling_methods_to_run)): # Loop Scaling Method
+            for k in range(len(scaling_methods_to_run)):
                 dataset = datasets[i][j][k]
-                
                 if dataset is None:
-                    level_results.append([None] * N_FOLDS) # Adiciona resultados nulos se o dataset falhou
+                    level_results.append([None] * N_FOLDS)
                     continue
-                    
+                
                 X = dataset.iloc[:, :-1]
                 y = dataset.iloc[:, -1]
                 model_scores = []
-                
-                # CORREÇÃO: Clona o modelo ANTES do K-Fold (melhor: antes do scaling loop)
-                # Garante que cada combinação (Dataset, Sep, Scaling) use um modelo novo.
                 current_model_instance = clone(model)
                 
                 for train_index, test_index in folds.split(X, y):
-                    X_train = X.iloc[train_index]
-                    X_test = X.iloc[test_index]
-                    y_train = y.iloc[train_index]
-                    y_test = y.iloc[test_index]
+                    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+                    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
                     
                     try:
                         current_model_instance.fit(X_train, y_train)
                         y_pred = current_model_instance.predict(X_test)
                         model_scores.append(calculate_score(y_test, y_pred))
                     except Exception as e:
-                        print(f"Erro no treino/predict ({name}, D{i+1}, Sep{sep_values[j]:.2f}, Fold): {e}", file=sys.stderr)
-                        model_scores.append(None) # Adiciona None em caso de falha
-                        
+                        model_scores.append(None)
+                
                 level_results.append(model_scores)
             dataset_results.append(level_results)
         results[name].append(dataset_results)
-    print(f"Modelo {name} concluído.")
 
 """Saving results"""
-end_time = time.time() # Fim do temporizador
-total_time = end_time - start_time
-
+total_time = time.time() - start_time
 models_frames = []
+actual_dataset_indices = range(ds_start + 1, ds_end + 1)
+
 for model_name in models_to_run:
     datasets_frames = []
     for i in range(len(datasets)):
         sep_frames = []
-        for j, sep in enumerate(sep_values):
-            # Obtém a lista de scores para todos os métodos de escala selecionados
+        for j in range(len(sep_values)):
             list_of_fold_results = results[model_name][i][j]
-            
             score_frames = []
             for scores in list_of_fold_results:
-                 # Cria o DataFrame para cada método de escala (6 colunas = 5 folds x 4 métricas)
-                 if scores is None or any(s is None for s in scores):
-                     # Adiciona DataFrame de NaNs se o treinamento falhou
-                     scaling_df = pd.DataFrame({m: [np.nan]*N_FOLDS for m in SCORES.keys()}, 
-                                             index=[f"fold {f+1}" for f in range(N_FOLDS)])
-                 else:
-                     scaling_df = pd.DataFrame(scores, index=[f"fold {f+1}" for f in range(N_FOLDS)])
-                 
-                 score_frames.append(scaling_df)
+                if scores is None or any(s is None for s in scores):
+                    df = pd.DataFrame({m: [np.nan]*N_FOLDS for m in SCORES.keys()}, 
+                                      index=[f"fold {f+1}" for f in range(N_FOLDS)])
+                else:
+                    df = pd.DataFrame(scores, index=[f"fold {f+1}" for f in range(N_FOLDS)])
+                score_frames.append(df)
 
-            # Concatena métodos de escala
-            weight_results = pd.concat(score_frames, axis=1, keys=scaling_methods_to_run)
-            sep_frames.append(weight_results)
-            
-        # Concatena valores de separação
-        dataset_results = pd.concat(sep_frames, axis=1, keys=[f"{sep:.2f}" for sep in sep_values])
-        datasets_frames.append(dataset_results)
+            sep_frames.append(pd.concat(score_frames, axis=1, keys=scaling_methods_to_run))
         
-    # Concatena datasets
-    model_results = pd.concat(datasets_frames, axis=1, keys=[f"dataset {d+1}" for d in range(num_datasets)])
+        datasets_frames.append(pd.concat(sep_frames, axis=1, keys=[f"{sep:.2f}" for sep in sep_values]))
+    
+    # Aqui ajustamos as chaves para refletir os números reais dos datasets (ex: dataset 11, 12...)
+    model_results = pd.concat(datasets_frames, axis=1, keys=[f"dataset {d}" for d in actual_dataset_indices])
     models_frames.append(model_results)
 
 final_result = pd.concat(models_frames, axis=1, keys=models_to_run)
 final_result.to_csv(outfile)
-print(f"\nResultados salvos em '{outfile}'.")
-print(f"Tempo total de execução do(s) subconjunto(s) da tarefa: {total_time:.2f} segundos ({total_time/60:.2f} minutos).")
+print(f"\nFinalizado! Salvo em: {outfile} em {total_time/60:.2f} min.")
