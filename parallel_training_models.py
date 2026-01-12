@@ -5,6 +5,10 @@ import sys
 import numpy as np
 import math
 from multiprocessing import Pool, cpu_count
+import time 
+
+# Importação para clonagem de modelos (Necessário para segurança em multiprocessing)
+from sklearn.base import clone 
 
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
@@ -66,7 +70,8 @@ N_FOLDS = 5
 random.seed(RANDOM_STATE)
 
 base_model = Perceptron(random_state=RANDOM_STATE)
-pool_classifiers = BaggingClassifier(base_estimator=base_model, n_estimators=100, random_state=RANDOM_STATE, bootstrap=True,
+# CORREÇÃO ANTERIOR APLICADA: 'base_estimator' -> 'estimator'
+pool_classifiers = BaggingClassifier(estimator=base_model, n_estimators=100, random_state=RANDOM_STATE, bootstrap=True,
                                      bootstrap_features=False, max_features=1.0, n_jobs=-1)
 
 # Modelos a serem rodados
@@ -81,7 +86,7 @@ MODELS_TO_RUN = {
   'LDA': LinearDiscriminantAnalysis(),
   'QDA': QuadraticDiscriminantAnalysis(),
   'DT': DecisionTreeClassifier(random_state=RANDOM_STATE),
-  'MLP': MLPClassifier(activation='relu', solver='adam', alpha=1e-5, hidden_layer_sizes=(5,2), random_state=RANDOM_STATE),
+  'MLP': MLPClassifier(activation='relu', solver='adam', alpha=1e-5, hidden_layer_sizes=(5,2), random_state=RANDOM_STATE, max_iter=1000),
   'Percep': Perceptron(random_state=RANDOM_STATE, n_jobs=-1),
   'XGBoost': XGBClassifier(n_jobs=-1, random_state=RANDOM_STATE),
   'RF': RandomForestClassifier(random_state=0, n_jobs=-1),
@@ -113,9 +118,9 @@ def train_and_score_worker(task: Dict[str, Any], data_dir: str, folds: Stratifie
   """
   model_name = task["model_name"]
   i = task["dataset_index"] 
-  j = task["sep_index"]      # Alterado de weight para sep
+  j = task["sep_index"]      
   k = task["scaling_index"] 
-  sep_value = task["sep_value"] # Alterado de weight para sep
+  sep_value = task["sep_value"] 
   scaling_method = task["scaling_method"]
   
   try:
@@ -131,9 +136,16 @@ def train_and_score_worker(task: Dict[str, Any], data_dir: str, folds: Stratifie
       print(f"Erro ao carregar dataset (d={i+1}, sep={sep_value:.2f}): {e}", file=sys.stderr)
       return (model_name, i, j, k, None)
       
-  model_info = MODELS_TO_RUN[model_name]
-  model_instance = model_info['class'](**model_info['params'])
-  
+  # CORREÇÃO AQUI: Clonar o modelo diretamente.
+  # Todos os modelos em MODELS_TO_RUN são instâncias (objetos prontos).
+  # Usamos clone() para garantir que cada processo receba uma cópia isolada.
+  try:
+      model_instance = clone(MODELS_TO_RUN[model_name])
+  except Exception as e:
+      # Lida com falha de clonagem se o modelo for um tipo não-clonável (improvável para estes)
+      print(f"Erro ao clonar modelo {model_name}: {e}", file=sys.stderr)
+      return (model_name, i, j, k, None)
+
   model_scores = []
   
   # Executa a validação cruzada
@@ -156,6 +168,9 @@ def train_and_score_worker(task: Dict[str, Any], data_dir: str, folds: Stratifie
 
 
 def run_parallel_training():
+    # 1. Início do temporizador
+    start_time = time.time()
+    
     # ADAPTAÇÃO: Gera os valores de separação baseados nas constantes do generate_datasets
     try:
         sep_values = np.arange(generate_datasets.START_SEP, 
@@ -184,9 +199,13 @@ def run_parallel_training():
                     }
                     all_tasks_config.append(task)
                     
-    num_processes = cpu_count()
+    #num_processes = max(1, int(cpu_count() * 0.75))
+    
+    num_processes = 6
+    
+    total_tasks = len(all_tasks_config)
     print(f"Iniciando processamento paralelo em {num_processes} núcleos.")
-    print(f"Total de tarefas: {len(all_tasks_config)}")
+    print(f"Total de tarefas: {total_tasks}")
     
     folds_object = StratifiedKFold(n_splits=N_FOLDS, random_state=RANDOM_STATE, shuffle=True)
     pool_args = [(task, DATASETS_DIR, folds_object) for task in all_tasks_config]
@@ -195,6 +214,11 @@ def run_parallel_training():
         results_list = list(pool.starmap(train_and_score_worker, pool_args))
 
     print("Processamento concluído. Organizando resultados...")
+    
+    # 2. Fim do temporizador e cálculo do tempo
+    end_time = time.time()
+    total_time = end_time - start_time
+    # --------------------------------------------------------
 
     # Estrutura para armazenar resultados (agora dimensionada por len(sep_values))
     all_results = {name: [
@@ -241,6 +265,10 @@ def run_parallel_training():
     final_result = pd.concat(models_frames, axis=1, keys=MODELS_TO_RUN.keys())
     final_result.to_csv("results_overlap.csv")
     print("Salvo em 'results_overlap.csv'.")
+    
+    # 3. Impressão do tempo total
+    print(f"\nTempo total de execução: {total_time:.2f} segundos ({total_time/60:.2f} minutos).")
+    
     return final_result
 
 if __name__ == '__main__':

@@ -1,0 +1,29 @@
+{
+  "n_samples": 1000,
+  "n_features": 14,
+  "n_informative": 14,
+  "n_redundant": 0,
+  "n_clusters_per_class": 4,
+  "class_sep": 2.8964678758656426,
+  "flip_y": 0.01,
+  "scale": [
+    63,
+    36,
+    39,
+    54,
+    35,
+    29,
+    24,
+    11,
+    99,
+    79,
+    53,
+    34,
+    74,
+    40
+  ],
+  "random_state": 10,
+  "weights": [
+    0.5436254226784955
+  ]
+}
