@@ -5,3 +5,4 @@ plots
 *.png
 .tool-versions
 results*
+logs

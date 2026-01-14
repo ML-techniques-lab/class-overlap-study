@@ -165,6 +165,7 @@ for name in models_to_run:
                         y_pred = current_model_instance.predict(X_test)
                         model_scores.append(calculate_score(y_test, y_pred))
                     except Exception as e:
+                        print(f"ERRO no modelo {name}: {e}")
                         model_scores.append(None)
                 
                 level_results.append(model_scores)
