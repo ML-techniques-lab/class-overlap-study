@@ -49,8 +49,7 @@ SCORES = {
 }
 
 base_model = Perceptron(random_state=RANDOM_STATE, max_iter=1000)
-pool_classifiers = BaggingClassifier(estimator=base_model, n_estimators=100, random_state=RANDOM_STATE, bootstrap=True,
-                                     bootstrap_features=False, max_features=1.0, n_jobs=1)
+pool_classifiers = RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE)
 
 MODELS = {
   'KNN': KNeighborsClassifier(n_neighbors=5, n_jobs=1),
