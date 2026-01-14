@@ -32,7 +32,9 @@ from deslib.dcs import OLA, LCA, MCB
 from sklearn_lvq import GlvqModel
 from xgboost import XGBClassifier
 from deslib.des import KNORAU
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
+
+from sklearn.calibration import CalibratedClassifierCV 
 
 """Constants"""
 DATASETS_DIR = "scaled_datasets"
@@ -52,7 +54,7 @@ pool_classifiers = BaggingClassifier(estimator=base_model, n_estimators=100, ran
 
 MODELS = {
   'KNN': KNeighborsClassifier(n_neighbors=5, n_jobs=1),
-  'SVM_lin': SVC(kernel='linear', probability=True),
+  'SVM_lin': CalibratedClassifierCV(LinearSVC(dual='auto', random_state=RANDOM_STATE)), 
   'SVM_rbf': SVC(kernel='rbf', probability=True),
   'GLQV': GlvqModel(prototypes_per_class=1, max_iter=2500, gtol=1e-5, beta=5, random_state=RANDOM_STATE),
   'LR': LogisticRegression(n_jobs=1),
