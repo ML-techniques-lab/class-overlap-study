@@ -1,15 +1,10 @@
-# Bibliotecas Principais de Ciência de Dados
-pandas
 numpy
-scipy
-
-# Scikit-learn e Dependências de Classificadores
-scikit-learn
+pandas==2.3.3
+scipy==1.10.1
+scikit-learn==1.6.1
+imbalanced-learn==0.12.4
+deslib==0.3.7
+sklearn-lvq==1.1.1
+xgboost==2.1.4
 matplotlib
 seaborn
-xgboost
-
-# Modelos Específicos e Ferramentas de Balanceamento
-imbalanced-learn  # Para geometric_mean_score
-sklearn-lvq       # Para GlvqModel
-deslib            # Para OLA, LCA, KNORAU, KNORAE, etc.
