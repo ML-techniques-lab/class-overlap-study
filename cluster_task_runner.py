@@ -79,6 +79,8 @@ MODELS = {
   'KNORAU': KNORAU(pool_classifiers, random_state=RANDOM_STATE)
 }
 
+# fazer o fit primeiro do bagging, antes
+
 random.seed(RANDOM_STATE)
 
 """System arguments"""
@@ -162,8 +164,11 @@ for name in models_to_run:
                 for train_index, test_index in folds.split(X, y):
                     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
                     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+                    if (name in ['OLA', 'LCA', 'MCB', 'KNORAE', 'KNORAU']):
+                        pool_classifiers.fit(X_train, y_train)
                     
                     try:
+                        # instância deve estar fit antes para os métodos deslib que deram erro (os dinâmicos)
                         current_model_instance.fit(X_train, y_train)
                         y_pred = current_model_instance.predict(X_test)
                         model_scores.append(calculate_score(y_test, y_pred))
