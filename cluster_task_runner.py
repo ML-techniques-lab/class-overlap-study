@@ -69,7 +69,7 @@ MODELS = {
   'KNN': KNeighborsClassifier(n_neighbors=5, n_jobs=1),
   'SVM_lin': CalibratedClassifierCV(LinearSVC(dual='auto', random_state=RANDOM_STATE)), 
   'SVM_rbf': SVC(kernel='rbf', probability=True),
-  'GLQV': GlvqModel(prototypes_per_class=1, max_iter=2500, gtol=1e-5, beta=5, random_state=RANDOM_STATE),
+  'GLQV': GlvqModel(prototypes_per_class=1, max_iter=2500, gtol=1e-5, beta=5, random_state=RANDOM_STATE, display=False),  
   'LR': LogisticRegression(n_jobs=1),
   'GNB': GaussianNB(),
   'GP': GaussianProcessClassifier(1.0 * RBF(1.0), random_state=RANDOM_STATE, n_jobs=1),
@@ -172,7 +172,14 @@ for name in models_to_run:
                 current_model_instance = clone(model)
                 
                 for train_index, test_index in folds.split(X, y):
-                    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+                    if (name == 'GLQV'):
+                        # GLQV exige float64 e arrays NumPy contíguos (flattened)
+                        X_train = X.iloc[train_index].values.astype(np.float64)
+                        X_test = X.iloc[test_index].values.astype(np.float64)
+                        y_train = y.iloc[train_index].values.astype(np.int64)
+                        y_test = y.iloc[test_index].values.astype(np.int64)
+                    else:
+                        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
                     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
                     if (name in ['OLA', 'LCA', 'MCB', 'KNORAE', 'KNORAU']):
                         # Conversão obrigatória para Numpy (evita erros de índice e FutureWarnings no Python 3.14)
