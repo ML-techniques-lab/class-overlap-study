@@ -7,6 +7,7 @@ import os
 import numpy as np
 from sklearn.base import clone
 import time
+from sklearn.utils.validation import check_X_y
 
 # Dependências do projeto
 import generate_datasets 
@@ -32,9 +33,18 @@ from deslib.dcs import OLA, LCA, MCB
 from sklearn_lvq import GlvqModel
 from xgboost import XGBClassifier
 from deslib.des import KNORAU
+import sklearn.base
+from deslib.base import BaseDS as DES
 from sklearn.svm import SVC, LinearSVC
 
 from sklearn.calibration import CalibratedClassifierCV 
+
+
+#====================
+def sklearn_validate_patch(self, X, y, **kwargs):
+    # Simula o comportamento do _validate_data que o DESlib espera
+    return check_X_y(X, y, accept_sparse=True)
+#======================
 
 """Constants"""
 DATASETS_DIR = "scaled_datasets"
@@ -165,16 +175,29 @@ for name in models_to_run:
                     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
                     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
                     if (name in ['OLA', 'LCA', 'MCB', 'KNORAE', 'KNORAU']):
-                        pool_classifiers.fit(X_train, y_train)
+                        # Conversão obrigatória para Numpy (evita erros de índice e FutureWarnings no Python 3.14)
+                        X_train_np = X_train.to_numpy()
+                        y_train_np = y_train.to_numpy().ravel()
+
+                        current_model_instance.pool_classifiers.fit(X_train_np, y_train_np)
+
+                        current_model_instance._validate_data = sklearn_validate_patch.__get__(current_model_instance)
+
+                        # Agora o fit funcionará e criará o atributo 'estimators_'
+                        current_model_instance.fit(X_train_np, y_train_np)
+
                     
-                    try:
-                        # instância deve estar fit antes para os métodos deslib que deram erro (os dinâmicos)
-                        current_model_instance.fit(X_train, y_train)
-                        y_pred = current_model_instance.predict(X_test)
-                        model_scores.append(calculate_score(y_test, y_pred))
-                    except Exception as e:
-                        print(f"ERRO no modelo {name}: {e}")
-                        model_scores.append(None)
+                import traceback
+
+                try:
+
+                    current_model_instance.fit(X_train, y_train)
+                    y_pred = current_model_instance.predict(X_test)
+                    model_scores.append(calculate_score(y_test, y_pred))
+                except Exception as e:
+                    print(f"ERRO no modelo {name}: {e}")
+                    traceback.print_exc()  # This will show exactly where 'estimators_' was called
+                    model_scores.append(None)
                 
                 level_results.append(model_scores)
             dataset_results.append(level_results)
