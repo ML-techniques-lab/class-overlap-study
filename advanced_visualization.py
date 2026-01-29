@@ -194,7 +194,7 @@ def main():
         
     df = load_and_consolidate_data()
     if df is not None:
-        plot_global_averages(df)
+        #plot_global_averages(df)
         plot_granular_grids(df)
         print("\nProcesso concluído! Verifique a pasta 'plots_granular'.")
 
