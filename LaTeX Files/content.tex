@@ -1,0 +1,117 @@
+	\tableofcontents
+    \setcounter{page}{2}
+	\newpage
+    
+\section{Introdução}
+
+O desempenho de algoritmos de Aprendizagem de Máquina é intrinsecamente dependente da qualidade e da distribuição dos dados de entrada \cite{Projeto2025}. Em cenários reais, os dados são naturalmente inconsistentes, apresentando atributos em escalas completamente distintas \cite{Projeto2025}. Essa discrepância de magnitude é um obstáculo crítico, pois algoritmos que dependem de medidas de dissimilaridade — como a distância Euclidiana utilizada por modelos KNN e SVM — tendem a ser enviesados por atributos de maior escala, negligenciando variáveis potencialmente mais informativas que variam em intervalos menores \cite{Projeto2025, Amorim2023}.
+
+Embora a normalização (ou \textit{scaling}) seja uma etapa comum no pré-processamento para mitigar esse viés, a escolha da técnica é frequentemente feita de forma arbitrária \cite{Projeto2025, Amorim2023}. Além disso, desafios intrínsecos como o desbalanceamento de classes (\textit{Imbalance Ratio} - IR) e a sobreposição de classes (\textit{overlap}) complicam ainda mais essa escolha \cite{Projeto2025, Amorim2023}. O desbalanceamento ocorre quando há uma disparidade severa entre a quantidade de instâncias das classes, situação comum em diagnósticos médicos e detecção de face \cite{Projeto2025, Amorim2023}, enquanto a sobreposição surge quando as fronteiras de decisão estão mal definidas \cite{Projeto2025, Vuttipittayamongkol2021}. Apesar da relevância desses fatores, poucos estudos investigam como as técnicas de normalização interagem com essas características específicas dos dados \cite{Projeto2025, Amorim2023}.
+
+Este trabalho propõe um estudo sistemático para investigar a influência de cinco técnicas de normalização — \textit{Standard Scaler}, \textit{Min-max Scaler}, \textit{Maximum Absolute Scaler}, \textit{Robust Scaler} e \textit{Quantile Transformer} — na performance de classificação em cenários desafiadores \cite{Projeto2025, Amorim2023}. A investigação abrange 20 classificadores de diferentes paradigmas, incluindo modelos monolíticos e \textit{ensembles} estáticos e dinâmicos, como \textit{Random Forest}, \textit{XGBoost} e \textit{KNORAE} \cite{Projeto2025, Amorim2023}. Para garantir o rigor experimental, as análises de desbalanceamento e sobreposição são conduzidas de forma controlada através da manipulação de \textit{datasets} reais e geração de dados sintéticos \cite{Projeto2025}.
+
+Resultados prévios demonstram que a escolha da técnica de normalização é estatisticamente significante para a maioria dos modelos, validando a premissa de que uma escolha inadequada pode ser mais prejudicial do que não realizar normalização alguma \cite{Amorim2023}. Observou-se que modelos baseados em regras, como Árvores de Decisão e seus \textit{ensembles} (RF, XGBoost, AdaBoost), são virtualmente insensíveis à escala \cite{Amorim2023}. Em contrapartida, Redes Neurais e modelos baseados em distância apresentam alta sensibilidade \cite{Amorim2023}. Notavelmente, enquanto o \textit{Standard Scaler} destaca-se em dados balanceados, o \textit{Quantile Transformer} apresenta maior eficácia em cenários com alto desbalanceamento, fornecendo diretrizes valiosas para o pré-processamento de dados em aplicações reais \cite{Amorim2023}.
+
+
+\section{Metodologia}
+A metodologia foi estruturada para isolar o efeito da normalização em diferentes condições de separabilidade.
+
+\subsection{Configuração do Experimento com Dados Sintéticos}
+
+Para a realização dos experimentos controlados, utilizaremos a função \textit{make\_classification} da biblioteca \textit{scikit-learn}, que permite a síntese de problemas de classificação binária com propriedades estatísticas customizáveis. Foram gerados 100 conjuntos de dados distintos, seguindo as diretrizes paramétricas detalhadas a seguir:
+
+\begin{itemize}
+	\item \textbf{Dimensionalidade e Amostragem:} Cada dataset é composto por $n=1000$ instâncias e um número de atributos ($n\_features$) variando aleatoriamente entre 10 e 100. 
+	\item \textbf{Estrutura de Atributos:} Para garantir a complexidade, o número de atributos informativos ($n\_informative$) varia entre 50\% e 100\% do total de atributos. Os atributos restantes são definidos como redundantes ($n\_redundant$), sendo gerados como combinações lineares aleatórias dos atributos informativos, simulando a colinearidade presente em dados reais \cite{Amorim2023}.
+	\item \textbf{Complexidade Intra-classe:} O número de agrupamentos (clusters) por classe varia aleatoriamente entre 2 e 5, aumentando a não-linearidade das fronteiras de decisão.
+	\item \textbf{Controle de Ruído e Estabilidade:} Foi aplicado um fator de \textit{flip\_y} de 0.01, introduzindo 1\% de ruído através da troca aleatória de rótulos, o que desafia a robustez dos classificadores. A reprodutibilidade é garantida pelo uso de um \textit{random\_state} fixo em 10.
+	\item \textbf{Simulação de Escalas Distintas:} Para validar a necessidade das técnicas de normalização, cada atributo de cada dataset foi multiplicado por um fator de escala aleatório no intervalo $[0, 100]$. Este procedimento assegura que os atributos operem em magnitudes variadas, simulando a inconsistência de escala típica de problemas reais \cite{Projeto2025, Amorim2023}.
+	\item \textbf{Embaralhamento (Shuffle):} O parâmetro \textit{shuffle} foi ativado tanto para as instâncias quanto para os atributos. Isso garante que a ordem de apresentação dos dados não influencie o aprendizado e que os atributos informativos e redundantes não estejam agrupados de forma previsível, forçando o modelo a identificar as relações latentes.
+\end{itemize}
+
+\subsection{Protocolos de Overlap e Desbalanceamento}
+
+Seguindo os objetivos específicos deste estudo \cite{Projeto2025}, a geração dos dados seguiu dois protocolos distintos:
+
+\begin{itemize}
+	\item \textbf{Estudo de Overlap:} O balanceamento entre as classes é mantido próximo à paridade (pesos entre 0.4 e 0.6), enquanto a separabilidade é manipulada.
+	\item \textbf{Estudo de Desbalanceamento:} A separação entre classes (\textit{class\_sep}) é mantida em um nível moderado (entre 0.1 e 5.0), enquanto a taxa de instâncias por classe é manipulada conforme os intervalos definidos no projeto (de 1-10 até 91-100) \cite{Projeto2025, Amorim2023}.
+\end{itemize}
+
+\subsection{Técnicas de Normalização}
+
+Foram testadas seis abordagens de tratamento de escala:
+Original: Dados sem qualquer pré-processamento (Linha de base).
+
+\begin{enumerate}
+\item StandardScaler (SS): Centralização na média e escala pela variância unitária
+\item MinMaxScaler (MA): Transformação para o intervalo $[0, 1]$.
+\item RobustScaler (RS): Escala baseada em quartis, menos sensível a outliers.
+\item QuantileTransformer (QT): Mapeamento para uma distribuição uniforme ou normal.
+\item PowerTransformer (PT): Transformação de potência para tornar os dados mais gaussianos.
+\end{enumerate}
+
+\subsection{Modelos de Classificação}
+
+Os experimentos abrangeram 21 classificadores, incluindo métodos lineares (LR, SVM), ensembles (RF, XGBoost, AdaBoost) e Seleção Dinâmica (OLA, KNORAE, etc.). O protocolo de teste utilizou Stratified 5-Fold Cross-Validation. As métricas extraídas foram Acurácia, F1-Score, ROC AUC e G-Mean, sendo esta última crucial para avaliar o desempenho em classes minoritárias sob desbalanceamento.
+
+\subsection{Ambiente de Execução e Protocolo de Teste}
+
+\begin{itemize}
+    \item \textbf{HPC}: Os experimentos foram executados no cluster do Alliance Canada utilizando o escalonador Slurm para paralelização via \textit{Job Arrays}.
+    \item \textbf{Validação}: Utilizou-se a técnica de \textit{Stratified K-Fold} com 5 dobras para garantir que a proporção das classes fosse mantida em todos os testes.
+    \item \textbf{Métricas de Avaliação}: Foram registradas a Acurácia, F1-Score, G-Mean (essencial para dados desbalanceados) e ROC AUC.
+\end{itemize}
+ 
+	\newpage
+
+\section{Resultados e Discussão}
+
+    Nesta seção, analisam-se os resultados obtidos após a consolidação de 100 datasets sintéticos sob dez níveis de sobreposição. A análise foca no desempenho médio (Global Averages) de cada classificador em função das seis técnicas de normalização aplicadas.
+    
+    \subsection{Visão Geral e Desempenho por Paradigma}
+    
+    A análise dos heatmaps de Acurácia (Figura \ref{fig:heat_acc}) e F1-Score (Figura \ref{fig:heat_f1}) revela que o impacto das técnicas de normalização não é uniforme, variando drasticamente conforme o paradigma do algoritmo.
+    
+    \begin{figure}[H]\centering\begin{subfigure}[b]{0.48\textwidth}\centering\includegraphics[width=\textwidth]{summary_heatmap_accuracy.pdf}\caption{Média Final Consolidada: Acurácia}\label{fig:heat_acc}\end{subfigure}\hfill\begin{subfigure}[b]{0.48\textwidth}\centering\includegraphics[width=\textwidth]{summary_heatmap_f1_score.pdf}\caption{Média Final Consolidada: F1-Score}\label{fig:heat_f1}\end{subfigure}\caption{Heatmaps comparativos de desempenho global.}\end{figure}
+    
+    \subsubsection{Modelos de Alta Sensibilidade (GP e KNN)}
+    
+    O classificador Gaussian Process (GP) destacou-se como o modelo mais dependente de pré-processamento. Sem normalização (Original), o GP apresentou resultados próximos ao acaso (Acurácia $\approx$ 0.502 e F1-Score $\approx$ 0.003). Entretanto, com a aplicação de QuantileTransformer (QT), sua performance saltou para patamares superiores a 0.92, evidenciando que a escala dos atributos é crítica para a definição de sua função de covariância.Similarmente, o KNN demonstrou um ganho consistente com a normalização, mantendo médias de acurácia em torno de 0.938 com o uso de RobustScaler (RS), contra 0.868 na escala original. Isso reforça a premissa de que algoritmos baseados em distância são vulneráveis a atributos com diferentes ordens de magnitude em cenários de overlap.
+    
+    \subsubsection{Robustez de Modelos Baseados em Árvores}
+    
+    Em contrapartida, modelos como Decision Tree (DT) e AdaBoost exibiram uma neutralidade quase total às técnicas de escala. A DT manteve um desempenho constante de 0.785 de acurácia em todos os cenários, confirmando que a natureza de partição do espaço de características por limiares ortogonais torna esses modelos invariantes a transformações monotônicas de escala.
+    
+    \subsection{Impacto na Sobreposição e Desbalanceamento}
+    
+    As métricas G-Mean e ROC AUC foram fundamentais para avaliar a capacidade dos modelos em distinguir a classe minoritária em zonas de alta densidade de overlap.
+    
+    \begin{figure}[H]\centering\begin{subfigure}[b]{0.48\textwidth}\centering\includegraphics[width=\textwidth]{summary_heatmap_g_mean.pdf}\caption{Média Final Consolidada: G-Mean}\label{fig:heat_gmean}\end{subfigure}\hfill\begin{subfigure}[b]{0.48\textwidth}\centering\includegraphics[width=\textwidth]{summary_heatmap_roc_auc.pdf}\caption{Média Final Consolidada: ROC AUC}\label{fig:heat_auc}\end{subfigure}\caption{Avaliação de robustez ao desbalanceamento e separabilidade.}\end{figure}
+    
+    O modelo GLQV (Generalized Learning Vector Quantization) não apresentou uma melhora notável em sua métrica G-Mean quando normalizado (de 0.700 para $\approx$ 0.769), inclusive modelos normalizados com alta sobreposição tiveram eficácia pior que o não normalizado, melhorando quando o nível de separação se aproximou de 1.0 (vide figura 48).Para os métodos de Seleção Dinâmica (DES), como KNORAE e OLA, os resultados seguiram a tendência dos modelos base, mas com uma estabilidade ligeiramente superior em cenários de baixo overlap.
+	\newpage
+    
+\section{Conclusão e Trabalhos Futuros}
+
+Os resultados parciais deste estudo permitem concluir que a escolha da técnica de normalização não é meramente uma etapa acessória, mas um fator determinante para o sucesso da classificação em cenários de sobreposição.
+
+Conclui-se que algoritmos baseados em funções de base radial e distâncias geométricas, como o GP (Gaussian Process) e o KNN, são extraordinariamente sensíveis à ausência de escala. O caso do modelo GP é emblemático: a sua performance evolui de um estado de nulidade funcional (F1-Score $\approx$ 0) para um desempenho de excelência (F1-Score $>$ 0.90) apenas com a troca do scaler para o QuantileTransformer. Por outro lado, confirmou-se a robustez de modelos baseados em árvores (DT, RF, AdaBoost), que mantêm o desempenho invariante independentemente da técnica de normalização aplicada.
+
+As técnicas QuantileTransformer (QT) e RobustScaler (RS) apresentaram-se como as opções mais consistentes para mitigar o ruído gerado pela sobreposição de classes, oferecendo as melhores métricas de G-Mean, o que indica uma proteção superior à classe minoritária em zonas de fronteira nebulosas.
+
+\subsection{Trabalhos Futuros}
+
+Como continuidade desta pesquisa, pretende-se:
+\begin{itemize}
+\item Investigar a interação entre técnicas de normalização e métodos de oversampling (como SMOTE) para verificar se existe um efeito sinérgico na redução do erro em cenários de overlap extremo.
+
+\item Expandir o estudo para Redes Neurais Profundas (Deep Learning) e avaliar se a normalização por lotes (Batch Normalization) substitui a necessidade de scalers tradicionais nesses cenários.
+
+\item Desenvolver um meta-modelo capaz de recomendar automaticamente o melhor scaler com base em métricas de complexidade do dataset.
+
+\end{itemize}
+	\newpage
+
+\section{Referências Bibliográficas}
+\printbibliography[heading=none]

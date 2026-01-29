@@ -1,0 +1,161 @@
+\documentclass[12pt,a4paper,final]{article}
+\usepackage[left=3cm,right=2cm,top=3cm,bottom=2cm]{geometry}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{datetime}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{pslatex} %Aplica a fonte Times New Roman%
+\captionsetup[figure]{name=Figura}
+\captionsetup[table]{name=Tabela}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption} % Para colocar gráficos lado a lado
+\usepackage[strings]{underscore}
+\usepackage{placeins}
+\usepackage[style=numeric, backend=biber]{biblatex} % Estilo numérico (ex: [1])
+\addbibresource{referencias.bib} % Nome do seu arquivo .bib
+
+% Mapeamento das pastas de médias globais
+\graphicspath{
+    {plots/Global_Averages/accuracy/},
+    {plots/Global_Averages/f1_score/},
+    {plots/Global_Averages/g_mean/},
+    {plots/Global_Averages/roc_auc/},
+    {plots/Granular_Grids/AdaBoost/accuracy/},
+    {plots/Granular_Grids/AdaBoost/f1_score/},
+    {plots/Granular_Grids/AdaBoost/g_mean/},
+    {plots/Granular_Grids/AdaBoost/roc_auc/},
+    {plots/Granular_Grids/Bagging/accuracy/},
+    {plots/Granular_Grids/Bagging/f1_score/},
+    {plots/Granular_Grids/Bagging/g_mean/},
+    {plots/Granular_Grids/Bagging/roc_auc/},
+    {plots/Granular_Grids/DT/accuracy/},
+    {plots/Granular_Grids/DT/f1_score/},
+    {plots/Granular_Grids/DT/g_mean/},
+    {plots/Granular_Grids/DT/roc_auc/},
+    {plots/Granular_Grids/GLQV/accuracy/},
+    {plots/Granular_Grids/GLQV/f1_score/},
+    {plots/Granular_Grids/GLQV/g_mean/},
+    {plots/Granular_Grids/GLQV/roc_auc/},
+    {plots/Granular_Grids/GNB/accuracy/},
+    {plots/Granular_Grids/GNB/f1_score/},
+    {plots/Granular_Grids/GNB/g_mean/},
+    {plots/Granular_Grids/GNB/roc_auc/},
+    {plots/Granular_Grids/GP/accuracy/},
+    {plots/Granular_Grids/GP/f1_score/},
+    {plots/Granular_Grids/GP/g_mean/},
+    {plots/Granular_Grids/GP/roc_auc/},
+    {plots/Granular_Grids/KNN/accuracy/},
+    {plots/Granular_Grids/KNN/f1_score/},
+    {plots/Granular_Grids/KNN/g_mean/},
+    {plots/Granular_Grids/KNN/roc_auc/},
+    {plots/Granular_Grids/KNORAE/accuracy/},
+    {plots/Granular_Grids/KNORAE/f1_score/},
+    {plots/Granular_Grids/KNORAE/g_mean/},
+    {plots/Granular_Grids/KNORAE/roc_auc/},
+    {plots/Granular_Grids/KNORAU/accuracy/},
+    {plots/Granular_Grids/KNORAU/f1_score/},
+    {plots/Granular_Grids/KNORAU/g_mean/},
+    {plots/Granular_Grids/KNORAU/roc_auc/},
+    {plots/Granular_Grids/LCA/accuracy/},
+    {plots/Granular_Grids/LCA/f1_score/},
+    {plots/Granular_Grids/LCA/g_mean/},
+    {plots/Granular_Grids/LCA/roc_auc/},
+    {plots/Granular_Grids/LDA/accuracy/},
+    {plots/Granular_Grids/LDA/f1_score/},
+    {plots/Granular_Grids/LDA/g_mean/},
+    {plots/Granular_Grids/LDA/roc_auc/},
+    {plots/Granular_Grids/LR/accuracy/},
+    {plots/Granular_Grids/LR/f1_score/},
+    {plots/Granular_Grids/LR/g_mean/},
+    {plots/Granular_Grids/LR/roc_auc/},
+    {plots/Granular_Grids/MCB/accuracy/},
+    {plots/Granular_Grids/MCB/f1_score/},
+    {plots/Granular_Grids/MCB/g_mean/},
+    {plots/Granular_Grids/MCB/roc_auc/},
+    {plots/Granular_Grids/MLP/accuracy/},
+    {plots/Granular_Grids/MLP/f1_score/},
+    {plots/Granular_Grids/MLP/g_mean/},
+    {plots/Granular_Grids/MLP/roc_auc/},
+    {plots/Granular_Grids/OLA/accuracy/},
+    {plots/Granular_Grids/OLA/f1_score/},
+    {plots/Granular_Grids/OLA/g_mean/},
+    {plots/Granular_Grids/OLA/roc_auc/},
+    {plots/Granular_Grids/Percep/accuracy/},
+    {plots/Granular_Grids/Percep/f1_score/},
+    {plots/Granular_Grids/Percep/g_mean/},
+    {plots/Granular_Grids/Percep/roc_auc/},
+    {plots/Granular_Grids/QDA/accuracy/},
+    {plots/Granular_Grids/QDA/f1_score/},
+    {plots/Granular_Grids/QDA/g_mean/},
+    {plots/Granular_Grids/QDA/roc_auc/},
+    {plots/Granular_Grids/RF/accuracy/},
+    {plots/Granular_Grids/RF/f1_score/},
+    {plots/Granular_Grids/RF/g_mean/},
+    {plots/Granular_Grids/RF/roc_auc/},
+    {plots/Granular_Grids/SVM_lin/accuracy/},
+    {plots/Granular_Grids/SVM_lin/f1_score/},
+    {plots/Granular_Grids/SVM_lin/g_mean/},
+    {plots/Granular_Grids/SVM_lin/roc_auc/},
+    {plots/Granular_Grids/SVM_rbf/accuracy/},
+    {plots/Granular_Grids/SVM_rbf/f1_score/},
+    {plots/Granular_Grids/SVM_rbf/g_mean/},
+    {plots/Granular_Grids/SVM_rbf/roc_auc/},
+    {plots/Granular_Grids/XGBoost/accuracy/},
+    {plots/Granular_Grids/XGBoost/f1_score/},
+    {plots/Granular_Grids/XGBoost/g_mean/},
+    {plots/Granular_Grids/XGBoost/roc_auc/},
+}
+
+\newcommand{\plotMedia}[2]{
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\textwidth]{avg_lineplot_#1_#2.pdf}
+		\caption{Média Global: #1 (#2).}
+	\end{figure}
+}
+
+\newcommand{\plotGrid}[3]{
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{plots/Granular_Grids/#1/#2/grid_#1_#2_ds_#3.pdf}
+		\caption{Grid #1 (#2) - Datasets #3.}
+	\end{figure}
+}
+
+% Macro para Célula de Média (3 argumentos: largura, #1, #2)
+\newcommand{\cellMedia}[3]{
+	\begin{subfigure}{#1\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{avg_lineplot_#2_#3.pdf}
+		\caption{\scriptsize #2 (#3)} % Fonte menor para não poluir
+	\end{subfigure}
+}
+
+% Macro para Célula de Grid (4 argumentos: largura, #1, #2, #3)
+\newcommand{\cellGrid}[4]{
+	\begin{subfigure}{#1\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{plots/Granular_Grids/#2/#3/grid_#2_#3_ds_#4.pdf}
+		\caption{\scriptsize #2 (#3) - DS #4}
+	\end{subfigure}
+}
+
+\author{João Felipe Brandão Jatobá}
+\title{Relatório Parcial de Pesquisa: Projeto PIIC4163-2025}
+
+
+\begin{document}
+
+\include{titlepage}
+\include{content}
+\include{apendice_gerado}
+
+\end{document}

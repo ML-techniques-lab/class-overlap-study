@@ -1,0 +1,107 @@
+\babel@toc {portuguese}{}\relax 
+\contentsline {section}{\numberline {1}Introdução}{3}{section.1}%
+\contentsline {section}{\numberline {2}Metodologia}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Configuração do Experimento com Dados Sintéticos}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Protocolos de Overlap e Desbalanceamento}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Técnicas de Normalização}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Modelos de Classificação}{5}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Ambiente de Execução e Protocolo de Teste}{5}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Resultados e Discussão}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Visão Geral e Desempenho por Paradigma}{6}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Modelos de Alta Sensibilidade (GP e KNN)}{6}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Robustez de Modelos Baseados em Árvores}{6}{subsubsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.2}Impacto na Sobreposição e Desbalanceamento}{7}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Conclusão e Trabalhos Futuros}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Trabalhos Futuros}{8}{subsection.4.1}%
+\contentsline {section}{\numberline {5}Referências Bibliográficas}{9}{section.5}%
+\contentsline {section}{\numberline {6}Apêndice - Resultados Detalhados}{10}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Médias Globais por Modelo e Métrica}{10}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Métricas Globais: ACCURACY}{10}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}Métricas Globais: F1 SCORE}{12}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}Métricas Globais: G MEAN}{14}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.4}Métricas Globais: ROC AUC}{16}{subsubsection.6.1.4}%
+\contentsline {subsection}{\numberline {6.2}Grids Granulares (Dataset por Dataset)}{18}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Granularidade: AdaBoost - ACCURACY}{18}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}Granularidade: AdaBoost - F1 SCORE}{19}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Granularidade: AdaBoost - G MEAN}{20}{subsubsection.6.2.3}%
+\contentsline {subsubsection}{\numberline {6.2.4}Granularidade: AdaBoost - ROC AUC}{21}{subsubsection.6.2.4}%
+\contentsline {subsubsection}{\numberline {6.2.5}Granularidade: Bagging - ACCURACY}{22}{subsubsection.6.2.5}%
+\contentsline {subsubsection}{\numberline {6.2.6}Granularidade: Bagging - F1 SCORE}{23}{subsubsection.6.2.6}%
+\contentsline {subsubsection}{\numberline {6.2.7}Granularidade: Bagging - G MEAN}{24}{subsubsection.6.2.7}%
+\contentsline {subsubsection}{\numberline {6.2.8}Granularidade: Bagging - ROC AUC}{25}{subsubsection.6.2.8}%
+\contentsline {subsubsection}{\numberline {6.2.9}Granularidade: DT - ACCURACY}{26}{subsubsection.6.2.9}%
+\contentsline {subsubsection}{\numberline {6.2.10}Granularidade: DT - F1 SCORE}{27}{subsubsection.6.2.10}%
+\contentsline {subsubsection}{\numberline {6.2.11}Granularidade: DT - G MEAN}{28}{subsubsection.6.2.11}%
+\contentsline {subsubsection}{\numberline {6.2.12}Granularidade: DT - ROC AUC}{29}{subsubsection.6.2.12}%
+\contentsline {subsubsection}{\numberline {6.2.13}Granularidade: GLQV - ACCURACY}{30}{subsubsection.6.2.13}%
+\contentsline {subsubsection}{\numberline {6.2.14}Granularidade: GLQV - F1 SCORE}{31}{subsubsection.6.2.14}%
+\contentsline {subsubsection}{\numberline {6.2.15}Granularidade: GLQV - G MEAN}{32}{subsubsection.6.2.15}%
+\contentsline {subsubsection}{\numberline {6.2.16}Granularidade: GLQV - ROC AUC}{33}{subsubsection.6.2.16}%
+\contentsline {subsubsection}{\numberline {6.2.17}Granularidade: GNB - ACCURACY}{34}{subsubsection.6.2.17}%
+\contentsline {subsubsection}{\numberline {6.2.18}Granularidade: GNB - F1 SCORE}{35}{subsubsection.6.2.18}%
+\contentsline {subsubsection}{\numberline {6.2.19}Granularidade: GNB - G MEAN}{36}{subsubsection.6.2.19}%
+\contentsline {subsubsection}{\numberline {6.2.20}Granularidade: GNB - ROC AUC}{37}{subsubsection.6.2.20}%
+\contentsline {subsubsection}{\numberline {6.2.21}Granularidade: GP - ACCURACY}{38}{subsubsection.6.2.21}%
+\contentsline {subsubsection}{\numberline {6.2.22}Granularidade: GP - F1 SCORE}{39}{subsubsection.6.2.22}%
+\contentsline {subsubsection}{\numberline {6.2.23}Granularidade: GP - G MEAN}{40}{subsubsection.6.2.23}%
+\contentsline {subsubsection}{\numberline {6.2.24}Granularidade: GP - ROC AUC}{41}{subsubsection.6.2.24}%
+\contentsline {subsubsection}{\numberline {6.2.25}Granularidade: KNN - ACCURACY}{42}{subsubsection.6.2.25}%
+\contentsline {subsubsection}{\numberline {6.2.26}Granularidade: KNN - F1 SCORE}{43}{subsubsection.6.2.26}%
+\contentsline {subsubsection}{\numberline {6.2.27}Granularidade: KNN - G MEAN}{44}{subsubsection.6.2.27}%
+\contentsline {subsubsection}{\numberline {6.2.28}Granularidade: KNN - ROC AUC}{45}{subsubsection.6.2.28}%
+\contentsline {subsubsection}{\numberline {6.2.29}Granularidade: KNORAE - ACCURACY}{46}{subsubsection.6.2.29}%
+\contentsline {subsubsection}{\numberline {6.2.30}Granularidade: KNORAE - F1 SCORE}{47}{subsubsection.6.2.30}%
+\contentsline {subsubsection}{\numberline {6.2.31}Granularidade: KNORAE - G MEAN}{48}{subsubsection.6.2.31}%
+\contentsline {subsubsection}{\numberline {6.2.32}Granularidade: KNORAE - ROC AUC}{49}{subsubsection.6.2.32}%
+\contentsline {subsubsection}{\numberline {6.2.33}Granularidade: KNORAU - ACCURACY}{50}{subsubsection.6.2.33}%
+\contentsline {subsubsection}{\numberline {6.2.34}Granularidade: KNORAU - F1 SCORE}{51}{subsubsection.6.2.34}%
+\contentsline {subsubsection}{\numberline {6.2.35}Granularidade: KNORAU - G MEAN}{52}{subsubsection.6.2.35}%
+\contentsline {subsubsection}{\numberline {6.2.36}Granularidade: KNORAU - ROC AUC}{53}{subsubsection.6.2.36}%
+\contentsline {subsubsection}{\numberline {6.2.37}Granularidade: LCA - ACCURACY}{54}{subsubsection.6.2.37}%
+\contentsline {subsubsection}{\numberline {6.2.38}Granularidade: LCA - F1 SCORE}{55}{subsubsection.6.2.38}%
+\contentsline {subsubsection}{\numberline {6.2.39}Granularidade: LCA - G MEAN}{56}{subsubsection.6.2.39}%
+\contentsline {subsubsection}{\numberline {6.2.40}Granularidade: LCA - ROC AUC}{57}{subsubsection.6.2.40}%
+\contentsline {subsubsection}{\numberline {6.2.41}Granularidade: LDA - ACCURACY}{58}{subsubsection.6.2.41}%
+\contentsline {subsubsection}{\numberline {6.2.42}Granularidade: LDA - F1 SCORE}{59}{subsubsection.6.2.42}%
+\contentsline {subsubsection}{\numberline {6.2.43}Granularidade: LDA - G MEAN}{60}{subsubsection.6.2.43}%
+\contentsline {subsubsection}{\numberline {6.2.44}Granularidade: LDA - ROC AUC}{61}{subsubsection.6.2.44}%
+\contentsline {subsubsection}{\numberline {6.2.45}Granularidade: LR - ACCURACY}{62}{subsubsection.6.2.45}%
+\contentsline {subsubsection}{\numberline {6.2.46}Granularidade: LR - F1 SCORE}{63}{subsubsection.6.2.46}%
+\contentsline {subsubsection}{\numberline {6.2.47}Granularidade: LR - G MEAN}{64}{subsubsection.6.2.47}%
+\contentsline {subsubsection}{\numberline {6.2.48}Granularidade: LR - ROC AUC}{65}{subsubsection.6.2.48}%
+\contentsline {subsubsection}{\numberline {6.2.49}Granularidade: MCB - ACCURACY}{66}{subsubsection.6.2.49}%
+\contentsline {subsubsection}{\numberline {6.2.50}Granularidade: MCB - F1 SCORE}{67}{subsubsection.6.2.50}%
+\contentsline {subsubsection}{\numberline {6.2.51}Granularidade: MCB - G MEAN}{68}{subsubsection.6.2.51}%
+\contentsline {subsubsection}{\numberline {6.2.52}Granularidade: MCB - ROC AUC}{69}{subsubsection.6.2.52}%
+\contentsline {subsubsection}{\numberline {6.2.53}Granularidade: MLP - ACCURACY}{70}{subsubsection.6.2.53}%
+\contentsline {subsubsection}{\numberline {6.2.54}Granularidade: MLP - F1 SCORE}{71}{subsubsection.6.2.54}%
+\contentsline {subsubsection}{\numberline {6.2.55}Granularidade: MLP - G MEAN}{72}{subsubsection.6.2.55}%
+\contentsline {subsubsection}{\numberline {6.2.56}Granularidade: MLP - ROC AUC}{73}{subsubsection.6.2.56}%
+\contentsline {subsubsection}{\numberline {6.2.57}Granularidade: OLA - ACCURACY}{74}{subsubsection.6.2.57}%
+\contentsline {subsubsection}{\numberline {6.2.58}Granularidade: OLA - F1 SCORE}{75}{subsubsection.6.2.58}%
+\contentsline {subsubsection}{\numberline {6.2.59}Granularidade: OLA - G MEAN}{76}{subsubsection.6.2.59}%
+\contentsline {subsubsection}{\numberline {6.2.60}Granularidade: OLA - ROC AUC}{77}{subsubsection.6.2.60}%
+\contentsline {subsubsection}{\numberline {6.2.61}Granularidade: Percep - ACCURACY}{78}{subsubsection.6.2.61}%
+\contentsline {subsubsection}{\numberline {6.2.62}Granularidade: Percep - F1 SCORE}{79}{subsubsection.6.2.62}%
+\contentsline {subsubsection}{\numberline {6.2.63}Granularidade: Percep - G MEAN}{80}{subsubsection.6.2.63}%
+\contentsline {subsubsection}{\numberline {6.2.64}Granularidade: Percep - ROC AUC}{81}{subsubsection.6.2.64}%
+\contentsline {subsubsection}{\numberline {6.2.65}Granularidade: QDA - ACCURACY}{82}{subsubsection.6.2.65}%
+\contentsline {subsubsection}{\numberline {6.2.66}Granularidade: QDA - F1 SCORE}{83}{subsubsection.6.2.66}%
+\contentsline {subsubsection}{\numberline {6.2.67}Granularidade: QDA - G MEAN}{84}{subsubsection.6.2.67}%
+\contentsline {subsubsection}{\numberline {6.2.68}Granularidade: QDA - ROC AUC}{85}{subsubsection.6.2.68}%
+\contentsline {subsubsection}{\numberline {6.2.69}Granularidade: RF - ACCURACY}{86}{subsubsection.6.2.69}%
+\contentsline {subsubsection}{\numberline {6.2.70}Granularidade: RF - F1 SCORE}{87}{subsubsection.6.2.70}%
+\contentsline {subsubsection}{\numberline {6.2.71}Granularidade: RF - G MEAN}{88}{subsubsection.6.2.71}%
+\contentsline {subsubsection}{\numberline {6.2.72}Granularidade: RF - ROC AUC}{89}{subsubsection.6.2.72}%
+\contentsline {subsubsection}{\numberline {6.2.73}Granularidade: SVM_lin - ACCURACY}{90}{subsubsection.6.2.73}%
+\contentsline {subsubsection}{\numberline {6.2.74}Granularidade: SVM_lin - F1 SCORE}{91}{subsubsection.6.2.74}%
+\contentsline {subsubsection}{\numberline {6.2.75}Granularidade: SVM_lin - G MEAN}{92}{subsubsection.6.2.75}%
+\contentsline {subsubsection}{\numberline {6.2.76}Granularidade: SVM_lin - ROC AUC}{93}{subsubsection.6.2.76}%
+\contentsline {subsubsection}{\numberline {6.2.77}Granularidade: SVM_rbf - ACCURACY}{94}{subsubsection.6.2.77}%
+\contentsline {subsubsection}{\numberline {6.2.78}Granularidade: SVM_rbf - F1 SCORE}{95}{subsubsection.6.2.78}%
+\contentsline {subsubsection}{\numberline {6.2.79}Granularidade: SVM_rbf - G MEAN}{96}{subsubsection.6.2.79}%
+\contentsline {subsubsection}{\numberline {6.2.80}Granularidade: SVM_rbf - ROC AUC}{97}{subsubsection.6.2.80}%
+\contentsline {subsubsection}{\numberline {6.2.81}Granularidade: XGBoost - ACCURACY}{98}{subsubsection.6.2.81}%
+\contentsline {subsubsection}{\numberline {6.2.82}Granularidade: XGBoost - F1 SCORE}{99}{subsubsection.6.2.82}%
+\contentsline {subsubsection}{\numberline {6.2.83}Granularidade: XGBoost - G MEAN}{100}{subsubsection.6.2.83}%
+\contentsline {subsubsection}{\numberline {6.2.84}Granularidade: XGBoost - ROC AUC}{101}{subsubsection.6.2.84}%
